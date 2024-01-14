@@ -14,15 +14,15 @@ export class VeiculoService {
     return this.veiculoRepository.save(veiculo);
   }
 
-  findOne(id: number) {
-    return this.veiculoRepository.findOne({ where: { id } });
+  findOne(placa: string) {
+    return this.veiculoRepository.findOne({ where: { placa } });
   }
 
-  update(id: number, veiculo: VeiculoEntity) {
-    return this.veiculoRepository.update(id, veiculo);
+  update(placa: string, veiculo: VeiculoEntity) {
+    return this.veiculoRepository.update(placa, veiculo);
   }
 
-  remove(id: number) {
-    return this.veiculoRepository.delete(id);
+  remove(placa: string, ativo: boolean) {
+    return this.veiculoRepository.update({ placa }, { ativo });
   }
 }
