@@ -5,7 +5,7 @@ import {
   ManyToOne,
   JoinColumn,
 } from 'typeorm';
-import { Estabelecimento } from '../estabelecimento/estabelecimento.entity'; // adjust the path as needed
+import { Estabelecimento } from '../../estabelecimento/entities/estabelecimento.entity'; // adjust the path as needed
 
 @Entity()
 export class Veiculo {

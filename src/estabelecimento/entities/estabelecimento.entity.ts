@@ -1,4 +1,4 @@
-import { Veiculo } from '../veiculo/veiculos.entity';
+import { Veiculo } from '../../veiculo/entities/veiculos.entity';
 import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
 
 @Entity()

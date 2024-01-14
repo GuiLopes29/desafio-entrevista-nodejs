@@ -4,13 +4,13 @@ import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import {
-  Estabelecimento,
+  EstabelecimentoEntity,
   EstabelecimentoModule,
   EstabelecimentoController,
   EstabelecimentoService,
 } from './estabelecimento';
 import {
-  Veiculo,
+  VeiculoEntity,
   VeiculoController,
   VeiculoModule,
   VeiculoService,
@@ -21,14 +21,14 @@ import {
     TypeOrmModule.forRoot({
       type: 'mysql',
       url: process.env.DATABASE_URL,
-      entities: [Estabelecimento, Veiculo],
+      entities: [EstabelecimentoEntity, VeiculoEntity],
       synchronize: true,
     }),
     EstabelecimentoModule,
     VeiculoModule,
   ],
-  controllers: [AppController, VeiculoController, EstabelecimentoController],
-  providers: [AppService, VeiculoService, EstabelecimentoService],
+  controllers: [AppController],
+  providers: [AppService],
 })
 export class AppModule {
   constructor(private readonly dataSource: DataSource) {}
