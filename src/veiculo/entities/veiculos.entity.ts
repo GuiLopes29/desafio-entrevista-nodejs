@@ -4,21 +4,25 @@ import {
   PrimaryGeneratedColumn,
   ManyToOne,
   JoinColumn,
+  OneToOne,
 } from 'typeorm';
-import { Estabelecimento } from '../../estabelecimento/entities/estabelecimento.entity'; // adjust the path as needed
-import { ApiProperty, ApiQuery } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
+import {
+  EstabelecimentoEntity,
+  EstacionamentoEntity,
+} from 'src/estabelecimento';
 
 enum TipoVeiculo {
   Carro = 'Carro',
   Moto = 'Moto',
 }
 
-@Entity()
+@Entity('veiculo')
 export class Veiculo {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ nullable: false })
+  @Column({ nullable: false, unique: true })
   @ApiProperty({ example: 'ABC-1234' })
   placa: string;
 
@@ -39,18 +43,11 @@ export class Veiculo {
   tipo: TipoVeiculo;
 
   @ManyToOne(
-    () => Estabelecimento,
+    () => EstabelecimentoEntity,
     (estabelecimento) => estabelecimento.veiculos,
   )
   @JoinColumn({ name: 'estabelecimentoId' })
-  estabelecimento: Estabelecimento;
-
-  @Column({ nullable: false })
-  @ApiProperty({ example: new Date() })
-  entrada: Date;
-
-  @Column({ nullable: true })
-  saida: Date;
+  estabelecimento: EstabelecimentoEntity;
 
   @Column({ default: true })
   ativo: boolean;
@@ -78,11 +75,8 @@ export class VeiculoQueryDto {
   @ApiProperty({ name: 'estabelecimentoId', required: false, type: Number })
   estabelecimentoId: number;
 
-  @ApiProperty({ name: 'saida', required: false, type: Date })
-  entrada: Date;
-
-  @ApiProperty({ name: 'saida', required: false, type: Date })
-  saida: Date;
+  @ApiProperty({ name: 'estacionamentoId', required: false, type: Number })
+  estacionamentoId: number;
 
   @ApiProperty({ name: 'ativo', required: false, type: Boolean })
   ativo: boolean;

@@ -5,27 +5,21 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import {
   EstabelecimentoEntity,
+  EstacionamentoEntity,
   EstabelecimentoModule,
-  EstabelecimentoController,
-  EstabelecimentoService,
 } from './estabelecimento';
-import {
-  VeiculoEntity,
-  VeiculoController,
-  VeiculoModule,
-  VeiculoService,
-} from './veiculo';
+import { VeiculoEntity, VeiculoModule } from './veiculo';
 
 @Module({
   imports: [
     TypeOrmModule.forRoot({
       type: 'mysql',
       url: process.env.DATABASE_URL,
-      entities: [EstabelecimentoEntity, VeiculoEntity],
+      entities: [EstabelecimentoEntity, VeiculoEntity, EstacionamentoEntity],
       synchronize: true,
     }),
-    EstabelecimentoModule,
     VeiculoModule,
+    EstabelecimentoModule,
   ],
   controllers: [AppController],
   providers: [AppService],

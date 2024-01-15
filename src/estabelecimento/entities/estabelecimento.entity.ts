@@ -1,8 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Veiculo } from '../../veiculo/entities/veiculos.entity';
 import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
+import { EstacionamentoEntity } from '.';
 
-@Entity()
+@Entity('estabelecimento')
 export class Estabelecimento {
   @PrimaryGeneratedColumn()
   id: number;
@@ -11,7 +12,7 @@ export class Estabelecimento {
   @ApiProperty({ example: 'Estacionamento do Zé' })
   nome: string;
 
-  @Column({ nullable: false })
+  @Column({ nullable: false, unique: true })
   @ApiProperty({ example: '70.466.394/0001-53' })
   cnpj: string;
 
@@ -20,24 +21,29 @@ export class Estabelecimento {
   endereco: string;
 
   @Column({ nullable: true })
-  @ApiProperty({ example: '1234-5678' })
+  @ApiProperty({ example: '11 1234-5678' })
   telefone: string;
 
   @OneToMany(() => Veiculo, (veiculo) => veiculo.estabelecimento)
   veiculos: Veiculo[];
 
+  @OneToMany(
+    () => EstacionamentoEntity,
+    (estacionamento) => estacionamento.estabelecimento,
+  )
+  estacionamento: EstacionamentoEntity[];
+
   @Column({ nullable: false })
-  @ApiProperty({ example: 30 })
+  @ApiProperty({ example: 0 })
   vagasMotos: number;
 
   @Column({ nullable: false })
-  @ApiProperty({ example: 15 })
+  @ApiProperty({ example: 0 })
   vagasCarros: number;
 
   @Column({ default: true })
   ativo: boolean;
 }
-
 export class EstabelecimentoQueryDto {
   @ApiProperty({ name: 'id', required: false, type: Number })
   id: number;

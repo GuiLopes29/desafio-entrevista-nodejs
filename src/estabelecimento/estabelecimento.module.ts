@@ -4,10 +4,18 @@ import {
   EstabelecimentoEntity,
   EstabelecimentoController,
   EstabelecimentoService,
+  EstacionamentoEntity,
 } from '.';
+import { VeiculoEntity } from '../veiculo';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([EstabelecimentoEntity])],
+  imports: [
+    TypeOrmModule.forFeature([
+      EstabelecimentoEntity,
+      EstacionamentoEntity,
+      VeiculoEntity,
+    ]),
+  ],
   providers: [EstabelecimentoService],
   controllers: [EstabelecimentoController],
 })

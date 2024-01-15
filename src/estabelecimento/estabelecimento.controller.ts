@@ -11,11 +11,6 @@ import {
   HttpException,
   HttpStatus,
 } from '@nestjs/common';
-import { EstabelecimentoService } from './estabelecimento.service';
-import {
-  Estabelecimento,
-  EstabelecimentoQueryDto,
-} from './entities/estabelecimento.entity';
 import {
   ApiBody,
   ApiOperation,
@@ -24,7 +19,14 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import {
+  EstabelecimentoService,
+  EstabelecimentoEntity,
+  EstabelecimentoQueryDto,
+  EstacionamentoEntity,
+} from '.';
 import { ApiCommonResponses } from '../decorators/common-responses.decorator';
+import { VeiculoEntity } from 'src/veiculo';
 
 @ApiTags('Estabelecimentos')
 @Controller('estabelecimento')
@@ -56,7 +58,7 @@ export class EstabelecimentoController {
   find(
     @Query() query?: EstabelecimentoQueryDto,
     @Param('cnpj') cnpj?: string,
-  ): Promise<Estabelecimento[]> {
+  ): Promise<EstabelecimentoEntity[]> {
     try {
       if (cnpj && cnpj !== ',') {
         query = { ...query, cnpj };
@@ -84,16 +86,52 @@ export class EstabelecimentoController {
     }
   }
 
+  @Get(':cnpj/estacionamentos')
+  @HttpCode(200)
+  @ApiOperation({ summary: 'Busca os estacionamentos de um estabelecimento' })
+  @ApiResponse({ status: 200, description: 'Estacionamentos encontrados' })
+  @ApiResponse({ status: 404, description: 'Estabelecimento não encontrado' })
+  @ApiCommonResponses()
+  @ApiParam({
+    name: 'cnpj',
+    type: String,
+    required: true,
+    description: 'Consulta utilizando o CNPJ via Param',
+  })
+  async getEstacionamentos(@Param('cnpj') cnpj: string) {
+    try {
+      cnpj = cnpj.replace(/\D/g, '');
+      await this.estabelecimentoService.findOne(cnpj).then((result) => {
+        if (result.ativo === false) {
+          throw new HttpException(
+            'Estabelecimento não encontrado',
+            HttpStatus.NOT_FOUND,
+          );
+        }
+      });
+
+      return await this.estabelecimentoService.getSumarioEstacionamento(cnpj);
+    } catch (err) {
+      if (err instanceof HttpException) {
+        throw err;
+      }
+      throw new HttpException(
+        'Erro ao buscar estacionamentos',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
   @Post()
   @HttpCode(201)
   @ApiOperation({ summary: 'Cria um novo estabelecimento' })
   @ApiResponse({ status: 201, description: 'Estabelecimento criado' })
   @ApiResponse({ status: 400, description: 'Erro ao criar estabelecimento' })
   @ApiCommonResponses()
-  @ApiBody({ type: Estabelecimento })
+  @ApiBody({ type: EstabelecimentoEntity })
   async create(
-    @Body() estabelecimento: Estabelecimento,
-  ): Promise<Estabelecimento> {
+    @Body() estabelecimento: EstabelecimentoEntity,
+  ): Promise<EstabelecimentoEntity> {
     try {
       estabelecimento.cnpj = estabelecimento.cnpj.replace(/\D/g, '');
       let existe: boolean = false;
@@ -140,6 +178,111 @@ export class EstabelecimentoController {
     }
   }
 
+  @Post(':cnpj/entrar')
+  @HttpCode(200)
+  @ApiOperation({
+    summary: 'Entra um veículo no estacionamento',
+    description: `Caso o veículo já estiver em um estacionamento,
+       a API deverá informar, caso contrario, o veículo poderá entrar`,
+  })
+  @ApiResponse({ status: 200, description: 'Veículo entrou no estacionamento' })
+  @ApiResponse({ status: 404, description: 'Estabelecimento não encontrado' })
+  @ApiCommonResponses()
+  @ApiParam({
+    name: 'cnpj',
+    type: String,
+    required: true,
+    description: 'Consulta utilizando o CNPJ via Param',
+  })
+  @ApiBody({ type: VeiculoEntity })
+  async entrarEstacionamento(
+    @Param('cnpj') cnpj: string,
+    @Body() veiculo: VeiculoEntity,
+  ): Promise<EstacionamentoEntity> {
+    try {
+      cnpj = cnpj.replace(/\D/g, '');
+      const estabelecimento = await this.estabelecimentoService
+        .findOne(cnpj)
+        .then((result) => {
+          if (!result) {
+            throw new HttpException(
+              'Estabelecimento não encontrado',
+              HttpStatus.NOT_FOUND,
+            );
+          } else {
+            return result;
+          }
+        });
+
+      const { vagasCarros, vagasMotos } = estabelecimento;
+
+      // Verifica se o veículo pode entrar no estacionamento
+      await this.estabelecimentoService
+        .getSumarioEstacionamento(cnpj)
+        .then((result) => {
+          if (
+            (veiculo.tipo === 'Carro' &&
+              result.vagasCarrosOcupadas >= vagasCarros) ||
+            (veiculo.tipo === 'Moto' && result.vagasMotosOcupadas >= vagasMotos)
+          ) {
+            throw new HttpException(
+              'Estacionamento lotado',
+              HttpStatus.BAD_REQUEST,
+            );
+          }
+        });
+
+      return await this.estabelecimentoService.entrarEstacionamento(
+        cnpj,
+        veiculo.placa,
+      );
+    } catch (err) {
+      if (err instanceof HttpException) {
+        throw err;
+      }
+      throw new HttpException('Erro interno', HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  @Post(':cnpj/sair')
+  @HttpCode(200)
+  @ApiOperation({ summary: 'Sai um veículo do estacionamento' })
+  @ApiResponse({ status: 200, description: 'Veículo saiu do estacionamento' })
+  @ApiResponse({ status: 404, description: 'Estabelecimento não encontrado' })
+  @ApiCommonResponses()
+  @ApiParam({
+    name: 'cnpj',
+    type: String,
+    required: true,
+    description: 'Consulta utilizando o CNPJ via Param',
+  })
+  @ApiBody({ type: VeiculoEntity })
+  async sairEstacionamento(
+    @Param('cnpj') cnpj: string,
+    @Body() veiculo: VeiculoEntity,
+  ): Promise<EstacionamentoEntity> {
+    try {
+      cnpj = cnpj.replace(/\D/g, '');
+      await this.estabelecimentoService.findOne(cnpj).then((result) => {
+        if (!result) {
+          throw new HttpException(
+            'Estabelecimento não encontrado',
+            HttpStatus.NOT_FOUND,
+          );
+        }
+      });
+      return await this.estabelecimentoService.sairEstacionamento(
+        cnpj,
+        veiculo.placa,
+      );
+    } catch (err) {
+      if (err instanceof HttpException) {
+        throw err;
+      }
+      throw new HttpException('Erro interno', HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
   @Put(':cnpj')
   @HttpCode(200)
   @ApiOperation({ summary: 'Atualiza um estabelecimento' })
@@ -152,7 +295,7 @@ export class EstabelecimentoController {
   @ApiCommonResponses()
   async update(
     @Param('cnpj') cnpj: string,
-    @Body() estabelecimento: Estabelecimento,
+    @Body() estabelecimento: EstabelecimentoEntity,
   ): Promise<void> {
     try {
       cnpj = cnpj.replace(/\D/g, '');
@@ -171,7 +314,6 @@ export class EstabelecimentoController {
       if (err instanceof HttpException) {
         throw err;
       }
-      console.log(err);
       throw new HttpException(
         'Erro ao atualizar estabelecimento',
         HttpStatus.INTERNAL_SERVER_ERROR,
