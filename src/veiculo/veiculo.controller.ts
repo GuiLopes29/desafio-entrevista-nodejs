@@ -2,16 +2,18 @@ import {
   Controller,
   Get,
   Post,
-  Put,
   Delete,
-  Body,
   Param,
-  HttpException,
-  HttpStatus,
+  Body,
+  Put,
   HttpCode,
   Query,
+  HttpException,
+  HttpStatus,
+  UseGuards,
 } from '@nestjs/common';
 import {
+  ApiBearerAuth,
   ApiBody,
   ApiOperation,
   ApiParam,
@@ -22,14 +24,17 @@ import {
 import { VeiculoService, VeiculoEntity } from '.';
 import { ApiCommonResponses } from '../decorators/common-responses.decorator';
 import { VeiculoQueryDto } from './entities';
+import { AuthGuard } from '../auth/auth.guard';
 
 @ApiTags('Veiculos')
+@ApiBearerAuth()
 @Controller('veiculo')
+@UseGuards(AuthGuard)
 export class VeiculoController {
   constructor(private veiculoService: VeiculoService) {}
 
   @Post()
-  @HttpCode(204)
+  @HttpCode(200)
   @ApiOperation({
     summary: 'Cria um novo veículo',
     description:
@@ -43,6 +48,7 @@ export class VeiculoController {
     try {
       veiculo.placa = veiculo.placa.toUpperCase();
       let existe: boolean = false;
+
       // Verifica se o veículo já existe
       await this.veiculoService.findOne(veiculo.placa).then((result) => {
         if (result && result.ativo) {
@@ -70,9 +76,7 @@ export class VeiculoController {
             return true;
           });
       }
-      await this.veiculoService.create(veiculo);
-
-      return true;
+      return await this.veiculoService.create(veiculo);
     } catch (err) {
       if (err instanceof HttpException) {
         throw err;
@@ -105,8 +109,10 @@ export class VeiculoController {
   })
   async find(@Query() query?: VeiculoQueryDto, @Param('placa') placa?: string) {
     try {
-      if (placa) {
-        query = { ...query, placa };
+      if (placa && placa !== ',') {
+        if (placa) {
+          query = { ...query, placa };
+        }
       }
 
       const result = await this.veiculoService.find(query);
@@ -155,7 +161,11 @@ export class VeiculoController {
 
   @Delete()
   @HttpCode(200)
-  @ApiOperation({ summary: 'Desativa um veículo' }) // Desativando o veiculo fica indisponível para uso, mas não é removido do banco de dados.
+  @ApiOperation({
+    summary: 'Desativa um veículo',
+    description:
+      'Desativando o veiculo fica indisponível para uso, mas não é removido do banco de dados.',
+  })
   @ApiResponse({ status: 200, description: 'Veículo desativado' })
   @ApiResponse({ status: 404, description: 'Veículo não encontrado' })
   @ApiCommonResponses()

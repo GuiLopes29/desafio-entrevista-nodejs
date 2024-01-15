@@ -7,6 +7,7 @@ import {
   EstacionamentoEntity,
 } from '.';
 import { VeiculoEntity } from '../veiculo';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { VeiculoEntity } from '../veiculo';
       EstacionamentoEntity,
       VeiculoEntity,
     ]),
+    AuthModule,
   ],
   providers: [EstabelecimentoService],
   controllers: [EstabelecimentoController],

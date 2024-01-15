@@ -40,7 +40,7 @@ export class Veiculo {
 
   @Column({ nullable: false })
   @ApiProperty({ example: 'Carro' })
-  tipo: TipoVeiculo;
+  tipo: TipoVeiculo | string;
 
   @ManyToOne(
     () => EstabelecimentoEntity,

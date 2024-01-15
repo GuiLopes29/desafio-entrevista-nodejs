@@ -12,7 +12,6 @@ async function bootstrap() {
       'API REST para gerenciamento de um estacionamento de veículos',
     )
     .setVersion('1.0')
-    .addTag('desafio-nodejs')
     .addBearerAuth()
     .build();
   const document = SwaggerModule.createDocument(app, config);

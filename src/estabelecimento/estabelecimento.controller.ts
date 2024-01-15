@@ -10,8 +10,10 @@ import {
   Query,
   HttpException,
   HttpStatus,
+  UseGuards,
 } from '@nestjs/common';
 import {
+  ApiBearerAuth,
   ApiBody,
   ApiOperation,
   ApiParam,
@@ -26,10 +28,13 @@ import {
   EstacionamentoEntity,
 } from '.';
 import { ApiCommonResponses } from '../decorators/common-responses.decorator';
-import { VeiculoEntity } from 'src/veiculo';
+import { VeiculoEntity } from '../veiculo';
+import { AuthGuard } from '../auth/auth.guard';
 
 @ApiTags('Estabelecimentos')
 @Controller('estabelecimento')
+@ApiBearerAuth()
+@UseGuards(AuthGuard)
 export class EstabelecimentoController {
   constructor(
     private readonly estabelecimentoService: EstabelecimentoService,
@@ -63,11 +68,12 @@ export class EstabelecimentoController {
       if (cnpj && cnpj !== ',') {
         query = { ...query, cnpj };
       }
-      query.cnpj = query.cnpj.replace(/\D/g, '');
+      query.cnpj = query.cnpj ? query.cnpj.replace(/\D/g, '') : undefined;
 
       const result = this.estabelecimentoService.findAll(query);
 
       if (!result) {
+        console.log(result);
         throw new HttpException(
           'Estabelecimento não encontrado',
           HttpStatus.NOT_FOUND,
@@ -79,6 +85,7 @@ export class EstabelecimentoController {
       if (err instanceof HttpException) {
         throw err;
       }
+      console.log(err.message);
       throw new HttpException(
         'Estabelecimento não encontrado',
         HttpStatus.NOT_FOUND,

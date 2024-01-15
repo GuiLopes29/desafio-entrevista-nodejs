@@ -41,7 +41,7 @@ describe('EstabelecimentoController', () => {
       jest
         .spyOn(service, 'findAll')
         .mockImplementation(() => Promise.resolve(result));
-      expect(await controller.findAll()).toBe(result);
+      expect(await controller.find()).toBe(result);
     });
   });
 
