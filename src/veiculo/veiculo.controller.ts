@@ -9,16 +9,19 @@ import {
   HttpException,
   HttpStatus,
   HttpCode,
+  Query,
 } from '@nestjs/common';
 import {
   ApiBody,
   ApiOperation,
   ApiParam,
+  ApiQuery,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
 import { VeiculoService, VeiculoEntity } from '.';
 import { ApiCommonResponses } from '../decorators/common-responses.decorator';
+import { VeiculoQueryDto } from './entities';
 
 @ApiTags('Veiculos')
 @Controller('veiculo')
@@ -38,6 +41,7 @@ export class VeiculoController {
   @ApiBody({ type: VeiculoEntity })
   async create(@Body() veiculo: VeiculoEntity) {
     try {
+      veiculo.placa = veiculo.placa.toUpperCase();
       let existe: boolean = false;
       // Verifica se o veículo já existe
       await this.veiculoService.findOne(veiculo.placa).then((result) => {
@@ -87,31 +91,29 @@ export class VeiculoController {
   @ApiResponse({ status: 200, description: 'Veículo encontrado' })
   @ApiResponse({ status: 400, description: 'Erro ao encontrar veículo' })
   @ApiCommonResponses()
-  @ApiParam({ name: 'placa', required: true, type: String })
-  async findOne(@Param('placa') placa: string) {
+  @ApiParam({
+    name: 'placa',
+    type: String,
+    required: false,
+    description: 'Placa do veículo via parametro',
+  })
+  @ApiQuery({
+    name: 'placa',
+    required: false,
+    type: String,
+    description: 'Placa do veículo via query',
+  })
+  async find(@Query() query?: VeiculoQueryDto, @Param('placa') placa?: string) {
     try {
-      const result = await this.veiculoService.findOne(placa);
+      if (placa) {
+        query = { ...query, placa };
+      }
+
+      const result = await this.veiculoService.find(query);
       if (!result) {
         throw new HttpException('Veículo não encontrado', HttpStatus.NOT_FOUND);
       }
       return result;
-    } catch (err) {
-      if (err instanceof HttpException) {
-        throw err;
-      }
-      throw new HttpException('Erro interno', HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-  }
-
-  @Get()
-  @HttpCode(200)
-  @ApiOperation({ summary: 'Retorna todos os veículos' })
-  @ApiResponse({ status: 200, description: 'Veículos encontrados' })
-  @ApiResponse({ status: 400, description: 'Erro ao encontrar veículos' })
-  @ApiCommonResponses()
-  async findAll() {
-    try {
-      return await this.veiculoService.findAll();
     } catch (err) {
       if (err instanceof HttpException) {
         throw err;

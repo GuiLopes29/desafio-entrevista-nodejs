@@ -1,1 +1,1 @@
-export { Veiculo as VeiculoEntity } from './veiculos.entity';
+export { Veiculo as VeiculoEntity, VeiculoQueryDto } from './veiculos.entity';

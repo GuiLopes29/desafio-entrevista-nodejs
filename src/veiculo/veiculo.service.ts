@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, FindManyOptions } from 'typeorm';
 import { VeiculoEntity } from '.';
 
 @Injectable()
@@ -14,12 +14,16 @@ export class VeiculoService {
     return this.veiculoRepository.save(veiculo);
   }
 
-  findOne(placa: string, ativo?: boolean) {
-    return this.veiculoRepository.findOne({ where: { placa, ativo } });
+  find(query: Partial<VeiculoEntity>) {
+    const options: FindManyOptions<VeiculoEntity> = {
+      where: { ...query },
+    };
+
+    return this.veiculoRepository.find(options);
   }
 
-  findAll() {
-    return this.veiculoRepository.find({ where: { ativo: true } });
+  findOne(placa: string, ativo?: boolean) {
+    return this.veiculoRepository.findOne({ where: { placa, ativo } });
   }
 
   update(placa: string, veiculo: VeiculoEntity) {

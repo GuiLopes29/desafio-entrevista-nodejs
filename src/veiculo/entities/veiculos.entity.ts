@@ -6,9 +6,9 @@ import {
   JoinColumn,
 } from 'typeorm';
 import { Estabelecimento } from '../../estabelecimento/entities/estabelecimento.entity'; // adjust the path as needed
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiQuery } from '@nestjs/swagger';
 
-export enum TipoVeiculo {
+enum TipoVeiculo {
   Carro = 'Carro',
   Moto = 'Moto',
 }
@@ -53,5 +53,37 @@ export class Veiculo {
   saida: Date;
 
   @Column({ default: true })
+  ativo: boolean;
+}
+
+export class VeiculoQueryDto {
+  @ApiProperty({ name: 'id', required: false, type: Number })
+  id: number;
+
+  @ApiProperty({ name: 'placa', required: false, type: String })
+  placa: string;
+
+  @ApiProperty({ name: 'marca', required: false, type: String })
+  marca: string;
+
+  @ApiProperty({ name: 'modelo', required: false, type: String })
+  modelo: string;
+
+  @ApiProperty({ name: 'cor', required: false, type: String })
+  cor: string;
+
+  @ApiProperty({ name: 'tipo', required: false, type: String })
+  tipo: TipoVeiculo;
+
+  @ApiProperty({ name: 'estabelecimentoId', required: false, type: Number })
+  estabelecimentoId: number;
+
+  @ApiProperty({ name: 'saida', required: false, type: Date })
+  entrada: Date;
+
+  @ApiProperty({ name: 'saida', required: false, type: Date })
+  saida: Date;
+
+  @ApiProperty({ name: 'ativo', required: false, type: Boolean })
   ativo: boolean;
 }
