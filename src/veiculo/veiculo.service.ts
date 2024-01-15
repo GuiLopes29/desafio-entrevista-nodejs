@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { VeiculoEntity } from '.';
@@ -14,15 +14,26 @@ export class VeiculoService {
     return this.veiculoRepository.save(veiculo);
   }
 
-  findOne(placa: string) {
-    return this.veiculoRepository.findOne({ where: { placa } });
+  findOne(placa: string, ativo?: boolean) {
+    return this.veiculoRepository.findOne({ where: { placa, ativo } });
+  }
+
+  findAll() {
+    return this.veiculoRepository.find({ where: { ativo: true } });
   }
 
   update(placa: string, veiculo: VeiculoEntity) {
-    return this.veiculoRepository.update(placa, veiculo);
+    return this.veiculoRepository.update({ placa }, veiculo);
   }
 
-  remove(placa: string, ativo: boolean) {
-    return this.veiculoRepository.update({ placa }, { ativo });
+  async remove(placa: string) {
+    const veiculo = await this.veiculoRepository.findOne({ where: { placa } });
+
+    if (!veiculo) {
+      throw new HttpException('Veículo não encontrado', HttpStatus.NOT_FOUND);
+    }
+
+    veiculo.ativo = false;
+    return this.veiculoRepository.save(veiculo);
   }
 }

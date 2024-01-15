@@ -9,17 +9,16 @@ import {
   HttpException,
   HttpStatus,
   HttpCode,
-  Query,
 } from '@nestjs/common';
-import { VeiculoService, VeiculoEntity } from '.';
 import {
   ApiBody,
   ApiOperation,
   ApiParam,
-  ApiQuery,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { VeiculoService, VeiculoEntity } from '.';
+import { ApiCommonResponses } from '../decorators/common-responses.decorator';
 
 @ApiTags('Veiculos')
 @Controller('veiculo')
@@ -27,30 +26,49 @@ export class VeiculoController {
   constructor(private veiculoService: VeiculoService) {}
 
   @Post()
-  @HttpCode(201)
-  @ApiOperation({ summary: 'Cria um novo veículo' })
-  @ApiResponse({ status: 201, description: 'Veículo criado com sucesso' })
+  @HttpCode(204)
+  @ApiOperation({
+    summary: 'Cria um novo veículo',
+    description:
+      'Se o veículo já existir, apenas atualiza o status para ativo novamente',
+  })
+  @ApiResponse({ status: 204, description: 'Veículo criado com sucesso' })
   @ApiResponse({ status: 400, description: 'Erro ao criar veículo' })
-  @ApiResponse({ status: 401, description: 'Não autorizado' })
-  @ApiResponse({ status: 403, description: 'Acesso negado' })
-  @ApiResponse({ status: 500, description: 'Erro interno' })
+  @ApiCommonResponses()
   @ApiBody({ type: VeiculoEntity })
   async create(@Body() veiculo: VeiculoEntity) {
     try {
+      let existe: boolean = false;
       // Verifica se o veículo já existe
       await this.veiculoService.findOne(veiculo.placa).then((result) => {
-        if (result) {
+        if (result && result.ativo) {
           throw new HttpException(
             'Veículo já cadastrado',
             HttpStatus.BAD_REQUEST,
           );
+        } else if (result && !result.ativo) {
+          existe = true;
         }
       });
 
-      // Cria o veículo
-      const result = await this.veiculoService.create(veiculo);
+      // Cria o veículo, caso exista apenas atualiza o status para ativo novamente.
+      if (existe) {
+        veiculo.ativo = true;
+        return await this.veiculoService
+          .update(veiculo.placa, veiculo)
+          .then((result) => {
+            if (!result) {
+              throw new HttpException(
+                'Erro ao atualizar veículo',
+                HttpStatus.BAD_REQUEST,
+              );
+            }
+            return true;
+          });
+      }
+      await this.veiculoService.create(veiculo);
 
-      return { id: result.placa };
+      return true;
     } catch (err) {
       if (err instanceof HttpException) {
         throw err;
@@ -61,12 +79,14 @@ export class VeiculoController {
 
   @Get(':placa')
   @HttpCode(200)
-  @ApiOperation({ summary: 'Retorna um veículo existente' })
+  @ApiOperation({
+    summary: 'Retorna um veículo existente',
+    description:
+      'Também pode ser usado para verificar se o veículo existe e está ativo, retornando o veículo caso esteja ativo',
+  })
   @ApiResponse({ status: 200, description: 'Veículo encontrado' })
   @ApiResponse({ status: 400, description: 'Erro ao encontrar veículo' })
-  @ApiResponse({ status: 401, description: 'Não autorizado' })
-  @ApiResponse({ status: 403, description: 'Acesso negado' })
-  @ApiResponse({ status: 500, description: 'Erro interno' })
+  @ApiCommonResponses()
   @ApiParam({ name: 'placa', required: true, type: String })
   async findOne(@Param('placa') placa: string) {
     try {
@@ -83,14 +103,34 @@ export class VeiculoController {
     }
   }
 
-  @Put(':placa')
+  @Get()
   @HttpCode(200)
-  @ApiOperation({ summary: 'Atualiza um veículo existente' })
-  @ApiResponse({ status: 200, description: 'Veículo atualizado' })
+  @ApiOperation({ summary: 'Retorna todos os veículos' })
+  @ApiResponse({ status: 200, description: 'Veículos encontrados' })
+  @ApiResponse({ status: 400, description: 'Erro ao encontrar veículos' })
+  @ApiCommonResponses()
+  async findAll() {
+    try {
+      return await this.veiculoService.findAll();
+    } catch (err) {
+      if (err instanceof HttpException) {
+        throw err;
+      }
+      throw new HttpException('Erro interno', HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  @Put(':placa')
+  @HttpCode(204)
+  @ApiOperation({
+    summary: 'Atualiza um veículo existente',
+    description:
+      'Também pode ser usado para atualizar o estabelecimento do veículo',
+  })
+  @ApiResponse({ status: 204, description: 'Veículo atualizado' })
   @ApiResponse({ status: 400, description: 'Erro ao atualizar veículo' })
-  @ApiResponse({ status: 401, description: 'Não autorizado' })
-  @ApiResponse({ status: 403, description: 'Acesso negado' })
-  @ApiResponse({ status: 500, description: 'Erro interno' })
+  @ApiCommonResponses()
+  @ApiBody({ type: VeiculoEntity })
   async update(@Param('placa') placa: string, @Body() veiculo: VeiculoEntity) {
     try {
       await this.veiculoService.findOne(placa).then((result) => {
@@ -101,7 +141,8 @@ export class VeiculoController {
           );
         }
       });
-      return this.veiculoService.update(placa, veiculo);
+      this.veiculoService.update(placa, veiculo);
+      return true;
     } catch (err) {
       if (err instanceof HttpException) {
         throw err;
@@ -115,14 +156,10 @@ export class VeiculoController {
   @ApiOperation({ summary: 'Desativa um veículo' }) // Desativando o veiculo fica indisponível para uso, mas não é removido do banco de dados.
   @ApiResponse({ status: 200, description: 'Veículo desativado' })
   @ApiResponse({ status: 404, description: 'Veículo não encontrado' })
-  @ApiResponse({ status: 401, description: 'Não autorizado' })
-  @ApiResponse({ status: 403, description: 'Acesso negado' })
-  @ApiResponse({ status: 500, description: 'Erro interno' })
-  @ApiQuery({ name: 'placa', required: true, type: String })
-  @ApiQuery({ name: 'ativo', required: true, type: Boolean })
-  async remove(@Query() query: { placa: string; ativo: boolean }) {
+  @ApiCommonResponses()
+  @ApiParam({ name: 'placa', required: true, type: String })
+  async remove(@Param('placa') placa: string) {
     try {
-      const { placa, ativo } = query;
       await this.veiculoService.findOne(placa).then((result) => {
         if (!result) {
           throw new HttpException(
@@ -131,7 +168,16 @@ export class VeiculoController {
           );
         }
       });
-      return await this.veiculoService.remove(placa, ativo);
+
+      return await this.veiculoService.remove(placa).then((result) => {
+        if (!result) {
+          throw new HttpException(
+            'Erro ao desativar veículo',
+            HttpStatus.BAD_REQUEST,
+          );
+        }
+        return true;
+      });
     } catch (err) {
       if (err instanceof HttpException) {
         throw err;
