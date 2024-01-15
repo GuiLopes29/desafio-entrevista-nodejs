@@ -1,6 +1,6 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { FindManyOptions, Repository } from 'typeorm';
 import { Estabelecimento } from './entities/estabelecimento.entity';
 
 @Injectable()
@@ -10,23 +10,39 @@ export class EstabelecimentoService {
     private estabelecimentoRepository: Repository<Estabelecimento>,
   ) {}
 
-  findAll(): Promise<Estabelecimento[]> {
-    return this.estabelecimentoRepository.find();
+  findAll(query?: Partial<Estabelecimento>): Promise<Estabelecimento[]> {
+    const options: FindManyOptions<Estabelecimento> = {
+      where: { ...query },
+    };
+
+    return this.estabelecimentoRepository.find(options);
   }
 
-  findOne(id: number): Promise<Estabelecimento> {
-    return this.estabelecimentoRepository.findOne({ where: { id } });
-  }
-
-  async remove(id: string): Promise<void> {
-    await this.estabelecimentoRepository.delete(id);
+  findOne(cnpj: string): Promise<Estabelecimento> {
+    return this.estabelecimentoRepository.findOne({ where: { cnpj } });
   }
 
   async create(estabelecimento: Estabelecimento): Promise<Estabelecimento> {
     return this.estabelecimentoRepository.save(estabelecimento);
   }
 
-  async update(id: string, estabelecimento: Estabelecimento): Promise<void> {
-    await this.estabelecimentoRepository.update(id, estabelecimento);
+  async update(cnpj: string, estabelecimento: Estabelecimento): Promise<void> {
+    await this.estabelecimentoRepository.update({ cnpj }, estabelecimento);
+  }
+
+  async remove(cnpj: string): Promise<void> {
+    const estabelecimento = await this.estabelecimentoRepository.findOne({
+      where: { cnpj },
+    });
+
+    if (!estabelecimento) {
+      throw new HttpException(
+        'Estabelecimento não encontrado',
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    estabelecimento.ativo = false;
+    await this.estabelecimentoRepository.save(estabelecimento);
   }
 }

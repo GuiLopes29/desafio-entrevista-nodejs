@@ -61,7 +61,7 @@ export class VeiculoController {
         return await this.veiculoService
           .update(veiculo.placa, veiculo)
           .then((result) => {
-            if (!result) {
+            if (result === undefined) {
               throw new HttpException(
                 'Erro ao atualizar veículo',
                 HttpStatus.BAD_REQUEST,
@@ -84,7 +84,7 @@ export class VeiculoController {
   @Get(':placa')
   @HttpCode(200)
   @ApiOperation({
-    summary: 'Retorna um veículo existente',
+    summary: 'Retorna um ou varios veículos existentes',
     description:
       'Também pode ser usado para verificar se o veículo existe e está ativo, retornando o veículo caso esteja ativo',
   })
@@ -143,8 +143,8 @@ export class VeiculoController {
           );
         }
       });
-      this.veiculoService.update(placa, veiculo);
-      return true;
+
+      return this.veiculoService.update(placa, veiculo);
     } catch (err) {
       if (err instanceof HttpException) {
         throw err;
@@ -172,7 +172,7 @@ export class VeiculoController {
       });
 
       return await this.veiculoService.remove(placa).then((result) => {
-        if (!result) {
+        if (result === undefined) {
           throw new HttpException(
             'Erro ao desativar veículo',
             HttpStatus.BAD_REQUEST,

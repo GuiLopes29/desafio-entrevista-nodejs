@@ -10,11 +10,11 @@ export class VeiculoService {
     private veiculoRepository: Repository<VeiculoEntity>,
   ) {}
 
-  create(veiculo: VeiculoEntity) {
-    return this.veiculoRepository.save(veiculo);
+  async create(veiculo: VeiculoEntity): Promise<VeiculoEntity> {
+    return await this.veiculoRepository.save(veiculo);
   }
 
-  find(query: Partial<VeiculoEntity>) {
+  find(query?: Partial<VeiculoEntity>): Promise<VeiculoEntity[]> {
     const options: FindManyOptions<VeiculoEntity> = {
       where: { ...query },
     };
@@ -22,15 +22,15 @@ export class VeiculoService {
     return this.veiculoRepository.find(options);
   }
 
-  findOne(placa: string, ativo?: boolean) {
+  findOne(placa: string, ativo?: boolean): Promise<VeiculoEntity> {
     return this.veiculoRepository.findOne({ where: { placa, ativo } });
   }
 
-  update(placa: string, veiculo: VeiculoEntity) {
-    return this.veiculoRepository.update({ placa }, veiculo);
+  async update(placa: string, veiculo: VeiculoEntity): Promise<void> {
+    await this.veiculoRepository.update({ placa }, veiculo);
   }
 
-  async remove(placa: string) {
+  async remove(placa: string): Promise<void> {
     const veiculo = await this.veiculoRepository.findOne({ where: { placa } });
 
     if (!veiculo) {
@@ -38,6 +38,6 @@ export class VeiculoService {
     }
 
     veiculo.ativo = false;
-    return this.veiculoRepository.save(veiculo);
+    this.veiculoRepository.save(veiculo);
   }
 }
