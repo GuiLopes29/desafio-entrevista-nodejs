@@ -1,69 +1,62 @@
-![Dr Consulta](https://drconsulta.com/_next/image?url=%2Fimages%2FLogo-Dr-Consulta-Branco.png&w=128&q=100 "DrConsulta")
+## Tecnologias Utilizadas
 
-*"Salvar vidas e cuidar das pessoas porque elas não podem esperar nas filas da saúde."*
-Conheça: www.drconsulta.com
+Este projeto foi construído com as seguintes tecnologias:
 
-## Objetivo
-O teste é destinado para vaga de Desenvolvedor Back-end entendo como o candidato efetuou a solução e o raciocinio de criação
+- NodeJS: Um ambiente de execução JavaScript construído no motor JavaScript V8 do Chrome.
+- NestJS: Um framework Node.js progressivo para construir aplicações eficientes, confiáveis e escaláveis no lado do servidor.
+- TypeScript: Um superconjunto tipado de JavaScript que compila para JavaScript simples.
+- TypeOrm: Um ORM que pode ser executado no NodeJS e pode ser usado com TypeScript e JavaScript.
+- MySQL: Um sistema de gerenciamento de banco de dados relacional de código aberto.
+- JWT (JSON Web Tokens): Um meio compacto e seguro para URL de representar reivindicações a serem transferidas entre duas partes.
+- Passport: Middleware de autenticação compatível com Express para Node.js.
+- Bcrypt: Uma biblioteca para ajudá-lo a fazer hash de senhas.
+- dotenv: Um módulo sem dependências que carrega variáveis de ambiente de um arquivo `.env` para `process.env`.
 
-## Project - API
-Criar uma API REST para gerenciar um estacionamento de carros e motos.
+## Solicitações de Serviço
 
-#### Stack tecnológica
-- NestJS
-- TypeOrm
-- Mysql
-- Swagger
+As seguintes solicitações de serviço estão disponíveis para o endpoint `estabelecimento`:
 
-#### Cadastro de estabelecimento
-Criar um cadastro da empresa com os seguintes campos:
-- Nome;
-- CNPJ;
-- Endereço;
-- Telefone;
-- Quantidade de vagas para motos;
-- Quantidade de vagas para carros.
-- 
-**Todos** os campos são de preenchimento obrigatório.
+- `GET /estabelecimento/{cnpj}` - utilizado para buscar um ou varios estabelecimentos pelo cnpj ou todos os estabelecimentos via query
+- `GET /estabelecimento/{cnpj}/estacionamentos` - utilizado para listar os estacionamentos do estabelecimento
+- `POST /estabelecimento` - utilizando o body para enviar os dados do estabelecimento
+- `POST /estabelecimento/{cnpj}/entrar` - utilizado para entrada de veiculos
+- `POST /estabelecimento/{cnpj}/sair` - utilizado para saida de veiculos
+- `PUT /estabelecimento/{cnpj}` - utilizado para atualizar os dados do estabelecimento
+- `DELETE /estabelecimento/{cnpj}` - utilizado para desativar o estabelecimento
 
-#### Cadastro de veículos
-Criar um cadastro de veículos com os seguintes campos:
-- Marca;
-- Modelo;
-- Cor;
-- Placa;
-- Tipo.
-- 
-**Todos** os campos são de preenchimento obrigatório.
+Para o endpoint `veiculo`:
 
-#### Funcionalidades
-- **Estabelecimento:** CRUD;
-- **Veículos:** CRUD;
-- **Controle de entrada e saída de veículos.**
+- `GET /veiculo/{placa}` - utilizado para buscar um ou varios veiculos pela placa ou todos os veiculos via query
+- `POST /veiculo` - utilizado para cadastrar um veiculo
+- `PUT /veiculo/{placa}` - utilizado para atualizar os dados do veiculo
+- `DELETE /veiculo/{placa}` - utilizado para desativar o veiculo
 
-#### Requisitos
-- Controle JWT via Handshake
-- Modelagem de dados;
-- O retorno deverá ser em formato JSON;
-- Requisições GET, POST, PUT ou DELETE, conforme a melhor prática;
-- A persistência dos dados deverá ser em banco *relacional MYSQL*
-- Criar README do projeto descrevendo as tecnologias utilizadas, chamadas dos serviços e configurações necessário para executar a aplicação.
-   
-#### Ganha mais pontos
-- Sumário da quantidade de entrada e saída;
-- Sumário da quantidade de entrada e saída de veículos por hora;
-- Criação relatórios para visão ao dono do estabelecimento;
-- Desenvolver utilizando TDD;
+Para o endpoint `login`:
 
-## DevOps (Diferencial)
-Efetuar deploy da nossa API no ambiente do Google Cloud Platform utilizando os serviços
+- `POST /user` - utilizado para criar um usuario
+- `POST /user/login` - utilizado para realizar o login
 
-#### Serviços do GCP
-- Container Registry (Subir a imagem docker)
-- Cloud Run
+As rotas também estão disponíveis via Swagger em `http://localhost:3000/swagger`.
 
-## Submissão
-Crie um fork do teste para acompanharmos o seu desenvolvimento através dos seus commits.
+## Configuração
 
-## Obrigado!
-Agradecemos sua participação no teste. Boa sorte! 😄
+Para executar a aplicação, você precisa configurar o seguinte:
+
+1. Execute o Docker Compose para configurar os contêineres Docker necessários. Utilizando o comando `docker-compose up -d`.
+2. Configure o arquivo `.env` com as seguintes variáveis:
+   - `DATABASE_URL`: A URL do seu banco de dados.
+   - `JWT_SECRET_KEY`: A chave secreta para JWT.
+
+## Executando a Aplicação
+
+1. Instale as dependências com `yarn`.
+2. Execute a aplicação com `yarn start` ou `yarn start --watch`.
+
+Certifique-se de que os contêineres Docker estão em execução e o arquivo `.env` está corretamente configurado antes de iniciar a aplicação.
+
+### Executando os Testes
+
+1. Instale as dependências com `yarn`.
+2. Execute os testes com `yarn test`.
+
+OBS: Os testes estão sendo executados em um banco de dados em memória, portanto, não é necessário configurar o arquivo `.env` para executar os testes. Alguns testes não foram implementados devido a alguns imprevistos pessoais, mas acredito que o que foi implementado já é o suficiente para demonstrar o conhecimento.
