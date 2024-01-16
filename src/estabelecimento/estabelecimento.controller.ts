@@ -73,7 +73,6 @@ export class EstabelecimentoController {
       const result = this.estabelecimentoService.findAll(query);
 
       if (!result) {
-        console.log(result);
         throw new HttpException(
           'Estabelecimento não encontrado',
           HttpStatus.NOT_FOUND,
@@ -85,7 +84,6 @@ export class EstabelecimentoController {
       if (err instanceof HttpException) {
         throw err;
       }
-      console.log(err.message);
       throw new HttpException(
         'Estabelecimento não encontrado',
         HttpStatus.NOT_FOUND,

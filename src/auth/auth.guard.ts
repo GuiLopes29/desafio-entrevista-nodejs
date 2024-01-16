@@ -19,7 +19,6 @@ export class AuthGuard extends Guard('jwt') implements CanActivate {
     const token = this.extractTokenFromHeader(request);
 
     if (!token) {
-      console.log(token);
       throw new UnauthorizedException();
     }
 

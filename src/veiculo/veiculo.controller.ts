@@ -34,7 +34,7 @@ export class VeiculoController {
   constructor(private veiculoService: VeiculoService) {}
 
   @Post()
-  @HttpCode(200)
+  @HttpCode(204)
   @ApiOperation({
     summary: 'Cria um novo veículo',
     description:

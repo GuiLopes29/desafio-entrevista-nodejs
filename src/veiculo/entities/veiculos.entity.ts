@@ -7,10 +7,7 @@ import {
   OneToOne,
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  EstabelecimentoEntity,
-  EstacionamentoEntity,
-} from 'src/estabelecimento';
+import { EstabelecimentoEntity } from '../../estabelecimento';
 
 enum TipoVeiculo {
   Carro = 'Carro',

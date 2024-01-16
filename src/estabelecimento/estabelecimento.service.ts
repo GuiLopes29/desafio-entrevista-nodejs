@@ -2,7 +2,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindManyOptions, IsNull, Repository } from 'typeorm';
 import { EstabelecimentoEntity, EstacionamentoEntity } from '.';
-import { VeiculoEntity } from '../veiculo';
+import { VeiculoEntity, VeiculoService } from '../veiculo';
 
 @Injectable()
 export class EstabelecimentoService {
@@ -11,8 +11,7 @@ export class EstabelecimentoService {
     private estabelecimentoRepository: Repository<EstabelecimentoEntity>,
     @InjectRepository(EstacionamentoEntity)
     private estacionamentoRepository: Repository<EstacionamentoEntity>,
-    @InjectRepository(VeiculoEntity)
-    private veiculoRepository: Repository<VeiculoEntity>,
+    private veiculoService: VeiculoService,
   ) {}
 
   findAll(
@@ -195,23 +194,13 @@ export class EstabelecimentoService {
         }
       });
 
-    await this.veiculoRepository
-      .findOne({
-        where: { placa },
-      })
-      .then((result) => {
-        if (!result) {
-          throw new HttpException(
-            'Veículo não encontrado',
-            HttpStatus.NOT_FOUND,
-          );
-        } else {
-          this.veiculoRepository.update(
-            { placa },
-            { ...result, estabelecimento },
-          );
-        }
-      });
+    await this.veiculoService.findOne(placa).then((result) => {
+      if (!result) {
+        throw new HttpException('Veículo não encontrado', HttpStatus.NOT_FOUND);
+      } else {
+        this.veiculoService.update(placa, { ...result, estabelecimento });
+      }
+    });
 
     const entrada = new EstacionamentoEntity();
     entrada.estabelecimento = { ...estabelecimento };
@@ -246,11 +235,13 @@ export class EstabelecimentoService {
 
     saida.saida = new Date();
 
+    const veiculo = await this.veiculoService.findOne(placaVeiculo);
+
     return this.estacionamentoRepository.save(saida).then((result) => {
-      this.veiculoRepository.update(
-        { placa: placaVeiculo },
-        { estabelecimento: null },
-      );
+      this.veiculoService.update(placaVeiculo, {
+        ...veiculo,
+        estabelecimento: null,
+      });
       return result;
     });
   }

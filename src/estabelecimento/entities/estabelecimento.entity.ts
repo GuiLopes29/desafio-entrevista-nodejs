@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Veiculo } from '../../veiculo/entities/veiculos.entity';
+import { VeiculoEntity } from '../../veiculo/entities/';
 import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
 import { EstacionamentoEntity } from '.';
 
@@ -24,8 +24,8 @@ export class Estabelecimento {
   @ApiProperty({ example: '11 1234-5678' })
   telefone: string;
 
-  @OneToMany(() => Veiculo, (veiculo) => veiculo.estabelecimento)
-  veiculos: Veiculo[];
+  @OneToMany(() => VeiculoEntity, (veiculo) => veiculo.estabelecimento)
+  veiculos: VeiculoEntity[];
 
   @OneToMany(
     () => EstacionamentoEntity,

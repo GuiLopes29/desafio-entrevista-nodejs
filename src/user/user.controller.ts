@@ -10,7 +10,7 @@ import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Usuario } from './entities';
 import { UserService } from './user.service';
 import { TipoUsuario } from './entities/user.entity';
-import { AuthService } from 'src/auth/auth.service';
+import { AuthService } from '../auth/auth.service';
 
 @ApiTags('Usuario')
 @Controller('user')
@@ -58,7 +58,6 @@ export class UserController {
       if (err.code === '23505') {
         throw new HttpException('Usuário já existe', HttpStatus.CONFLICT);
       }
-      console.log(err.message);
       throw new HttpException('Erro interno', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }

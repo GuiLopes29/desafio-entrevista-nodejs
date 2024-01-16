@@ -14,7 +14,6 @@ export class UserService {
   ) {}
 
   findOne(login: string): Promise<Usuario> {
-    console.log(login);
     return this.userRepository.findOne({ where: { login } });
   }
 

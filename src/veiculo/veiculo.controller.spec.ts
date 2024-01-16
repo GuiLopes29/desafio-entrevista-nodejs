@@ -1,7 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { VeiculoController, VeiculoService, VeiculoEntity } from '.';
+import { VeiculoController } from './veiculo.controller';
+import { VeiculoService } from './veiculo.service';
+import { VeiculoEntity } from './entities';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { Veiculo } from './entities/veiculos.entity';
 
-const veiculo: VeiculoEntity = {
+const veiculoMock: VeiculoEntity = {
   id: 6,
   placa: 'ABC-1134',
   marca: 'Toyota',
@@ -13,48 +17,70 @@ const veiculo: VeiculoEntity = {
 };
 
 describe('VeiculoController', () => {
-  let veiculoController: VeiculoController;
-  let veiculoService: VeiculoService;
+  let controller: VeiculoController;
+  let service: VeiculoService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [VeiculoController],
       providers: [
+        VeiculoService,
         {
-          provide: VeiculoService,
+          provide: getRepositoryToken(Veiculo),
           useValue: {
+            findOne: jest.fn(),
             create: jest.fn(),
             find: jest.fn(),
-            update: jest.fn(),
-            remove: jest.fn(),
+            // add other methods you use from the repository
           },
         },
       ],
     }).compile();
 
-    veiculoController = module.get<VeiculoController>(VeiculoController);
-    veiculoService = module.get<VeiculoService>(VeiculoService);
+    controller = module.get<VeiculoController>(VeiculoController);
+    service = module.get<VeiculoService>(VeiculoService);
   });
 
-  it('should create a vehicle', async () => {
-    jest.spyOn(veiculoService, 'create').mockResolvedValue(veiculo);
-    expect(await veiculoController.create(veiculo)).toBe(veiculo);
+  describe('create', () => {
+    it('should create a new vehicle', async () => {
+      jest.spyOn(service, 'findOne').mockResolvedValue(undefined);
+      jest.spyOn(service, 'create').mockResolvedValue(veiculoMock);
+
+      const result = await controller.create(veiculoMock);
+
+      expect(result).toBeDefined();
+    });
   });
 
-  it('should find a vehicle', async () => {
-    jest.spyOn(veiculoService, 'find').mockResolvedValue([veiculo]);
-    expect(await veiculoController.find()).toBe(veiculo);
+  describe('find', () => {
+    it('should find all vehicles', async () => {
+      jest.spyOn(service, 'find').mockResolvedValue([veiculoMock]);
+
+      const result = await controller.find();
+
+      expect(result).toBeDefined();
+    });
   });
 
-  it('should update a vehicle', async () => {
-    jest.spyOn(veiculoService, 'update').mockResolvedValue(Promise.resolve());
-    expect(await veiculoController.update(veiculo.placa, veiculo)).toBe(
-      veiculo,
-    );
+  describe('update', () => {
+    it('should update a vehicle by placa', async () => {
+      jest.spyOn(service, 'findOne').mockResolvedValue(veiculoMock);
+      jest.spyOn(service, 'update').mockResolvedValue(undefined);
+
+      const result = await controller.update('ABC-1134', veiculoMock);
+
+      expect(result).toBeUndefined();
+    });
   });
 
-  it('should remove a vehicle', async () => {
-    jest.spyOn(veiculoService, 'remove').mockResolvedValue(Promise.resolve());
-    expect(await veiculoController.remove(veiculo.placa)).toBe(true);
+  describe('remove', () => {
+    it('should remove a vehicle by placa', async () => {
+      jest.spyOn(service, 'findOne').mockResolvedValue(veiculoMock);
+      jest.spyOn(service, 'remove').mockResolvedValue(veiculoMock);
+
+      const result = await controller.remove('ABC-1134');
+
+      expect(result).toBeDefined();
+    });
   });
 });

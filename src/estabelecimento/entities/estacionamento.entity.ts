@@ -1,10 +1,7 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { Veiculo } from '../../veiculo/entities/veiculos.entity';
 import {
   Entity,
   Column,
   PrimaryGeneratedColumn,
-  OneToMany,
   ManyToOne,
   JoinColumn,
 } from 'typeorm';

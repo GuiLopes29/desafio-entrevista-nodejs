@@ -30,7 +30,7 @@ export class VeiculoService {
     await this.veiculoRepository.update({ placa }, veiculo);
   }
 
-  async remove(placa: string): Promise<void> {
+  async remove(placa: string): Promise<VeiculoEntity> {
     const veiculo = await this.veiculoRepository.findOne({ where: { placa } });
 
     if (!veiculo) {
@@ -38,6 +38,6 @@ export class VeiculoService {
     }
 
     veiculo.ativo = false;
-    this.veiculoRepository.save(veiculo);
+    return this.veiculoRepository.save(veiculo);
   }
 }
